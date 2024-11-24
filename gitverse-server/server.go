@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
@@ -150,12 +151,12 @@ func overwriteTasksInDB(db *sql.DB, tasks []struct {
 }) error {
 	tx, err := db.Begin()
 	if err != nil {
-		return fmt.Errorf("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
 	}
 	defer tx.Rollback()
 	_, err = tx.Exec("DELETE FROM tasks")
 	if err != nil {
-		return fmt.Errorf("Error deleting tasks: %v", err)
+		return fmt.Errorf("error deleting tasks: %v", err)
 	}
 	for _, item := range tasks {
 		task := item.Data
@@ -175,11 +176,11 @@ func overwriteTasksInDB(db *sql.DB, tasks []struct {
 			string(targetForJSON), string(sourceForJSON),
 		)
 		if err != nil {
-			return fmt.Errorf("Error inserting task into DB: %v", err)
+			return fmt.Errorf("error inserting task into DB: %v", err)
 		}
 	}
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 
 	return nil
