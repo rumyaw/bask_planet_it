@@ -1,0 +1,19 @@
+version: '3'
+services:
+  client:
+    container_name: gitverse_client
+    build:
+      context: ./gitverse-client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+  
+  server:
+    container_name: gitverse_server
+    build:
+      context: ./gitverse-server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"

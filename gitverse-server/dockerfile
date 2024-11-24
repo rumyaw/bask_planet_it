@@ -1,0 +1,59 @@
+# Используем официальный образ Debian в качестве базового
+FROM debian:buster-slim as builder
+
+# Устанавливаем необходимые пакеты
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libc6-dev \
+        libcap-dev \
+        sqlite3 \
+        ca-certificates \
+        wget \
+        git \
+        make \
+        gcc \
+        g++ \
+        pkg-config \
+        musl-dev \
+        openssl \
+        zip \
+        unzip \
+        curl \
+        python3 \
+        python3-pip \
+        gnupg \
+        lsb-release
+
+# Устанавливаем Go
+ENV GOPATH=/go
+ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
+RUN wget -qO- https://dl.google.com/go/go1.19.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+
+# Устанавливаем рабочие директории
+WORKDIR /app
+
+# Копируем исходники и файлы конфигурации
+COPY . .
+
+# Включаем поддержку CGO и собираем бинарник
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o server
+
+# Используем минимальный образ Debian для запуска приложения
+FROM debian:buster-slim
+
+# Устанавливаем необходимые пакеты
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libc6 \
+        libcap2-bin \
+        sqlite3 \
+        ca-certificates
+
+# Перемещаем собранный бинарник в новую среду
+COPY --from=builder /app/server /server
+
+# Открываем порт 8080 для доступа к серверу
+EXPOSE 8080
+
+# Запускаем сервер
+CMD ["./server"]

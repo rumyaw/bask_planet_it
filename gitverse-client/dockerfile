@@ -1,0 +1,39 @@
+# Используем образ Node.js версии 18 в качестве базового образа
+FROM node:18 AS builder
+
+# Устанавливаем рабочие директории
+WORKDIR /app
+
+# Копируем все необходимые файлы в рабочую директорию
+COPY package*.json ./
+COPY ./.eslintrc.json ./
+COPY ./jsconfig.json ./
+COPY ./postcss.config.mjs ./
+COPY ./tailwind.config.js ./
+COPY ./src/ ./src/
+COPY ./public/ ./public/
+COPY ./next.config.mjs ./
+
+# Устанавливаем зависимости
+RUN npm install
+
+# Компилируем проект Next.js
+RUN npm run build
+
+# Используем минимальный образ Alpine Linux для запуска приложения
+FROM node:alpine
+
+# Устанавливаем рабочие директории
+WORKDIR /app
+
+# Копируем скомпилированный фронтенд из этапа сборки
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+
+# Открываем порт 3000 для доступа к приложению
+EXPOSE 3000
+
+# Запускаем приложение
+CMD ["npm", "start"]
