@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
-
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
